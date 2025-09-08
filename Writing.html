@@ -1,0 +1,847 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>IELTS Exam</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; margin: 0; }
+        .ielts-blue { color: #1e3a8a; }
+        .ielts-light-blue { background-color: #f0f9ff; }
+        .ielts-border { border-color: #bfdbfe; }
+        .chart-placeholder { background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); cursor: pointer; }
+        .chart-fullscreen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 50; display: flex; align-items: center; justify-content: center; }
+        .soft-shadow { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
+        #app, #waitingScreen { height: 100vh; overflow: hidden; }
+        #registerScreen { height: 100vh; overflow: auto; }
+        .task-text { font-size: 1rem; line-height: 1.5rem; color: #1f2937; }
+        .task-title { font-size: 1.25rem; font-weight: 700; color: #1f2937; }
+        .input-focus { transition: all 0.2s ease; }
+        .toast { transition: opacity 0.5s ease; }
+        select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%231e3a8a'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1.5em; }
+        select:focus { outline: none; }
+        button { outline: none; }
+        @media (max-width: 768px) {
+            .task-text { font-size: 0.875rem; line-height: 1.25rem; }
+            .task-title { font-size: 1.125rem; }
+            .grid-cols-12 { grid-template-columns: 1fr; }
+            .col-span-5, .col-span-7 { grid-column: 1 / -1; }
+            .part-card { margin-bottom: 1rem; }
+        }
+        @media (max-width: 640px) {
+            .task-text { font-size: 0.75rem; }
+            .task-title { font-size: 1rem; }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 text-slate-800">
+<!-- Register Screen -->
+<div id="registerScreen" class="flex items-center justify-center p-4 sm:p-6">
+    <div class="w-full max-w-md sm:max-w-lg p-6 sm:p-10 bg-white rounded-3xl soft-shadow border border-slate-200">
+        <div class="text-center mb-6 sm:mb-8">
+            <h1 class="text-3xl text-red-700 sm:text-4xl font-bold mb-3">IELTS EXAM</h1>
+            <p class="text-slate-500 text-base sm:text-lg">Register for Exam</p>
+        </div>
+        <div class="space-y-6">
+            <div class="space-y-2">
+                <label class="block text-sm font-semibold text-slate-700">Name</label>
+                <input id="name" class="w-full px-4 py-3 rounded-xl border border-slate-300 shadow-sm focus:ring-2 focus:ring-ielts-blue focus:border-ielts-blue input-focus text-base" placeholder="Name">
+            </div>
+            <div class="space-y-2">
+                <label class="block text-sm font-semibold text-slate-700">Surname</label>
+                <input id="surname" class="w-full px-4 py-3 rounded-xl border border-slate-300 shadow-sm focus:ring-2 focus:ring-ielts-blue focus:border-ielts-blue input-focus text-base" placeholder="Surname">
+            </div>
+            <div class="space-y-2">
+                <label class="block text-sm font-semibold text-slate-700">Class</label>
+                <select id="class" class="w-full px-4 py-3 rounded-xl border border-slate-300 shadow-sm focus:ring-2 focus:ring-ielts-blue focus:border-ielts-blue input-focus text-base bg-white">
+                    <option value="" disabled selected>Select a class</option>
+                    <option value="8A uz">8A uz</option>
+                    <option value="8B uz">8B uz</option>
+                    <option value="8C uz">8C uz</option>
+                    <option value="8A ru">8A ru</option>
+                    <option value="8B ru">8B ru</option>
+                    <option value="9A uz">9A uz</option>
+                    <option value="9B uz">9B uz</option>
+                    <option value="9C uz">9C uz</option>
+                    <option value="9D uz">9D uz</option>
+                    <option value="9A ru">9A ru</option>
+                    <option value="10A uz">10A uz</option>
+                    <option value="10B uz">10B uz</option>
+                    <option value="10C uz">10C uz</option>
+                    <option value="10D uz">10D uz</option>
+                    <option value="10A ru">10A ru</option>
+                    <option value="10B ru">10B ru</option>
+                    <option value="11A uz">11A uz</option>
+                    <option value="11B uz">11B uz</option>
+                    <option value="11C uz">11C uz</option>
+                    <option value="11A ru">11A ru</option>
+                    <option value="11B ru">11B ru</option>
+                </select>
+            </div>
+            <div class="pt-4">
+                <button id="registerBtn" class="w-full py-3 px-6 bg-red-700 text-white rounded-xl font-semibold text-base shadow-lg input-focus">Register</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Waiting Screen (Start Menu) -->
+<div id="waitingScreen" class="hidden flex flex-col items-center justify-center p-4 sm:p-6 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div class="text-center mb-8 sm:mb-10">
+        <h1 class="text-4xl sm:text-6xl font-bold text-red-700 mb-4">IELTS MOCK EXAM</h1>
+        <p class="text-lg sm:text-xl text-slate-600 mb-8">Please select a section to start the practice.</p>
+    </div>
+    <div class="flex flex-col sm:flex-row gap-4 sm:gap-6 w-full max-w-4xl justify-center">
+        <button id="startReadingBtn" class="w-full sm:w-auto py-4 px-6 bg-red-700 text-white rounded-xl font-semibold text-base sm:text-lg shadow-lg input-focus hover:bg-red-800 transition-colors flex-1">Reading</button>
+        <button id="startListeningBtn" class="w-full sm:w-auto py-4 px-6 bg-red-700 text-white rounded-xl font-semibold text-base sm:text-lg shadow-lg input-focus hover:bg-red-800 transition-colors flex-1">Listening</button>
+        <button id="startWritingBtn" class="w-full sm:w-auto py-4 px-6 bg-red-700 text-white rounded-xl font-semibold text-base sm:text-lg shadow-lg input-focus hover:bg-red-800 transition-colors flex-1">Writing</button>
+    </div>
+    <div id="userInfo" class="mt-6 text-center text-sm sm:text-base text-slate-600 hidden">
+        <p><span class="font-semibold">User: </span><span id="currentUserWaiting" class="text-red-600 font-bold">-</span></p>
+        <p><span class="font-semibold">Class: </span><span id="userClassWaiting" class="text-red-600 font-bold">-</span></p>
+    </div>
+</div>
+
+<!-- Main Application (Writing Only) -->
+<div id="app" class="hidden flex flex-col">
+    <!-- Header -->
+    <header class="bg-white shadow-lg border-b border-slate-200 py-4 px-6 sm:px-8 flex items-center justify-between">
+        <div class="text-xl sm:text-2xl font-bold text-red-600">IELTS MOCK EXAM - Writing</div>
+        <div class="text-center">
+            <div class="text-sm sm:text-base text-slate-500 font-medium">Time Remaining</div>
+            <div id="timer" class="text-3xl sm:text-4xl font-bold text-ielts-blue">60:00</div>
+        </div>
+        <div class="flex items-center gap-4 text-sm sm:text-base">
+            <div class="text-slate-600 font-semibold"><span id="currentUser" class="text-red-600 font-bold">-</span></div>
+            <div class="text-slate-600 font-semibold"><span id="userClass" class="text-red-600 font-bold">-</span></div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-4 sm:p-6 flex items-start">
+        <div class="max-w-7xl mx-auto bg-white rounded-3xl shadow-xl border border-slate-200 w-full h-[calc(100vh-140px)] sm:h-[calc(100vh-160px)]">
+            <!-- Top Info Bar -->
+            <div class="bg-ielts-light-blue border-b border-ielts-border p-4 sm:p-6 flex items-center justify-between">
+                <div class="text-sm sm:text-base text-slate-700 font-semibold">
+                    <span class="text-xs sm:text-sm">Start:</span> <span id="startTime" class="font-bold">-</span>
+                </div>
+                <div class="flex items-center gap-6 sm:gap-8">
+                    <button id="sendBtn" class="px-6 sm:px-8 py-2 sm:py-3 bg-green-600 text-white rounded-xl text-sm sm:text-base font-semibold shadow-md input-focus flex items-center hidden">
+                        <span>Send</span>
+                        <svg class="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Two-Column Layout -->
+            <div class="grid grid-cols-12 gap-6 sm:gap-8 p-6 sm:p-8 h-[calc(100%-80px)]">
+                <!-- Left Column (Prompts) -->
+                <div class="col-span-5 flex flex-col">
+                    <div id="part1Card" class="part-card p-6 sm:p-8 bg-white rounded-2xl border border-ielts-border soft-shadow flex-1">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="task-title">Part 1</div>
+                            <div class="text-sm sm:text-base text-slate-500 font-semibold bg-ielts-light-blue px-3 sm:px-4 py-1 sm:py-2 rounded-full">20 minutes</div>
+                        </div>
+                        <div class="task-text space-y-4">
+                            <p class="font-semibold bg-green-100 p-2 rounded-md">Summarize the information by selecting and reporting the main features, and make comparisons where relevant.</p>
+                            <p class="font-semibold bg-green-100 p-2 rounded-md">The bar chart illustrates music purchases in the USA in 2010, categorized by age group.</p>
+                        </div>
+                        <div class="mt-4 sm:mt-6">
+                            <div id="chart1" class="chart-placeholder w-full h-50 sm:h-56 rounded-2xl border-2 border-dashed border-slate-300 flex items-center justify-center">
+                                <div class="text-center text-slate-400">
+                                    <img src="./img.png" alt="chart" class="w-full h-50 rounded-2xl">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="part2Card" class="part-card p-5 sm:p-8 bg-white rounded-2xl border border-ielts-border soft-shadow flex-1 hidden">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="task-title">Part 2</div>
+                            <div class="text-sm sm:text-base text-slate-500 font-semibold bg-ielts-light-blue px-3 sm:px-4 py-1 sm:py-2 rounded-full">40 minutes</div>
+                        </div>
+                        <div class="task-text space-y-4">
+                            <p class="font-semibold bg-green-100 p-2 rounded-md">To what extent do you agree or disagree? Provide reasons and examples.</p>
+                            <p class="font-semibold bg-green-100 p-2 rounded-md">Modern buildings alter the character and appearance of towns and cities. Should the government mandate traditional styles for new constructions to preserve cultural identity?</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column (Input) -->
+                <div class="col-span-7 flex flex-col">
+                    <div class="flex flex-col h-full bg-ielts-light-blue rounded-2xl p-4 sm:p-6 border border-ielts-border">
+                        <!-- Part Switches -->
+                        <div class="flex gap-2 sm:gap-3 mb-4 sm:mb-6 bg-white rounded-xl p-2 soft-shadow">
+                            <button id="btnPart1" class="flex-1 py-3 sm:py-4 rounded-lg font-semibold text-ielts-blue bg-ielts-light-blue border-2 border-ielts-border shadow-inner input-focus text-sm sm:text-base">Part 1</button>
+                            <button id="btnPart2" class="flex-1 py-3 sm:py-4 rounded-lg font-medium text-slate-600 bg-white border-2 border-slate-300 input-focus text-sm sm:text-base">Part 2</button>
+                        </div>
+
+                        <!-- Part 1 Input -->
+                        <div id="part1Area" class="flex-1 flex flex-col">
+                            <label class="text-sm sm:text-base font-semibold text-slate-700 mb-3 sm:mb-4">Minimum 150 words</label>
+                            <div class="flex-1 bg-white rounded-xl border border-slate-200 soft-shadow focus-within:ring-2 focus-within:ring-ielts-blue input-focus">
+                                <textarea id="text1" class="flex-1 w-full resize-none p-4 sm:p-6 rounded-xl focus:outline-none task-text leading-7" placeholder="Summarize key trends and comparisons..." rows="14"></textarea>
+                            </div>
+                            <div class="mt-3 sm:mt-4 flex items-center justify-between text-sm sm:text-base">
+                                <div class="text-xs sm:text-sm text-slate-400 italic">Counted by spaces (ignores multiples)</div>
+                                <div class="text-slate-600 font-semibold">Words: <span id="words1" class="text-ielts-blue font-bold">0</span></div>
+                            </div>
+                        </div>
+
+                        <!-- Part 2 Input -->
+                        <div id="part2Area" class="flex-1 flex flex-col hidden">
+                            <label class="text-sm sm:text-base font-semibold text-slate-700 mb-3 sm:mb-4">Minimum 250 words</label>
+                            <div class="flex-1 bg-white rounded-xl border border-slate-200 soft-shadow focus-within:ring-2 focus-within:ring-ielts-blue input-focus">
+                                <textarea id="text2" class="flex-1 w-full resize-none p-4 sm:p-6 rounded-xl focus:outline-none task-text leading-7" placeholder="Present your arguments with examples..." rows="14"></textarea>
+                            </div>
+                            <div class="mt-3 sm:mt-4 flex items-center justify-between text-sm sm:text-base">
+                                <div class="text-xs sm:text-sm text-slate-400 italic">Counted by spaces (ignores multiples)</div>
+                                <div class="text-slate-600 font-semibold">Words: <span id="words2" class="text-ielts-blue font-bold">0</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="sm:py-4 text-center text-xs sm:text-sm text-slate-400">
+        IELTS Writing Mock by Muhammadamin Pulatov
+    </footer>
+</div>
+
+<!-- Chart Fullscreen Modal -->
+<div id="chartModal" class="hidden chart-fullscreen">
+    <div class="bg-white p-4 rounded-2xl max-w-4xl w-full">
+        <div class="text-center text-slate-400">
+            <img src="./img.png" alt="chart" class="w-full">
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div id="toast" class="fixed bottom-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg hidden opacity-0">
+    Sent Successfully!
+</div>
+
+<script>
+    // Configuration (Replace with your actual Telegram Bot Token and Chat ID)
+    const CONFIG = {
+        TELEGRAM_BOT_TOKEN: '8379769760:AAGLycE5aem7G7er68j4XcOkIelcIbt4AeU', // e.g., '123456:ABCD...'
+        TELEGRAM_CHAT_ID: '6061701834' // e.g., '@your_channel' or numeric chat id
+    };
+
+    // DOM Elements
+    const elements = {
+        registerScreen: document.getElementById('registerScreen'),
+        waitingScreen: document.getElementById('waitingScreen'),
+        app: document.getElementById('app'),
+        registerBtn: document.getElementById('registerBtn'),
+        nameInput: document.getElementById('name'),
+        surnameInput: document.getElementById('surname'),
+        classInput: document.getElementById('class'),
+        startReadingBtn: document.getElementById('startReadingBtn'),
+        startListeningBtn: document.getElementById('startListeningBtn'),
+        startWritingBtn: document.getElementById('startWritingBtn'),
+        currentUserWaiting: document.getElementById('currentUserWaiting'),
+        userClassWaiting: document.getElementById('userClassWaiting'),
+        currentUser: document.getElementById('currentUser'),
+        userClass: document.getElementById('userClass'),
+        startTime: document.getElementById('startTime'),
+        timer: document.getElementById('timer'),
+        btnPart1: document.getElementById('btnPart1'),
+        btnPart2: document.getElementById('btnPart2'),
+        part1Area: document.getElementById('part1Area'),
+        part2Area: document.getElementById('part2Area'),
+        part1Card: document.getElementById('part1Card'),
+        part2Card: document.getElementById('part2Card'),
+        text1: document.getElementById('text1'),
+        text2: document.getElementById('text2'),
+        words1: document.getElementById('words1'),
+        words2: document.getElementById('words2'),
+        sendBtn: document.getElementById('sendBtn'),
+        toast: document.getElementById('toast'),
+        chart1: document.getElementById('chart1'),
+        chartModal: document.getElementById('chartModal'),
+        userInfo: document.getElementById('userInfo')
+    };
+
+    // State
+    let state = {
+        totalSeconds: 60 * 60,
+        timerInterval: null,
+        currentUser: null,
+        isTestActive: false,
+        isTestSubmitted: false,
+        sectionStarted: localStorage.getItem('writingSectionStarted') || null // Track started section for writing only
+    };
+
+    // Utilities
+    const utils = {
+        formatTimestamp: (t) => {
+            const date = new Date(t);
+            return `${date.toLocaleDateString()} ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+        },
+        countWords: (text) => {
+            if (!text) return 0;
+            return text.trim().replace(/[.,]/g, '').split(/\s+/).filter(Boolean).length;
+        },
+        storageKey: (user) => `ielts_mock_writing_${user}`,
+        saveUser: (userData) => {
+            localStorage.setItem('userData', JSON.stringify(userData));
+        },
+        loadUser: () => {
+            const raw = localStorage.getItem('userData');
+            return raw ? JSON.parse(raw) : null;
+        },
+        saveState: (user) => {
+            const payload = {
+                text1: elements.text1.value,
+                text2: elements.text2.value,
+                startTime: elements.startTime.dataset.value || null
+            };
+            localStorage.setItem(utils.storageKey(user), JSON.stringify(payload));
+        },
+        loadState: (user) => {
+            const raw = localStorage.getItem(utils.storageKey(user));
+            if (!raw) return;
+            try {
+                const data = JSON.parse(raw);
+                elements.text1.value = data.text1 || '';
+                elements.text2.value = data.text2 || '';
+                if (data.startTime) {
+                    elements.startTime.dataset.value = data.startTime;
+                    elements.startTime.textContent = utils.formatTimestamp(data.startTime);
+                }
+            } catch (e) {
+                console.error('Failed to load state:', e);
+            }
+        },
+        showToast: (message, isError = false) => {
+            elements.toast.textContent = message;
+            elements.toast.classList.remove('hidden', 'opacity-0');
+            elements.toast.classList.toggle('bg-green-600', !isError);
+            elements.toast.classList.toggle('bg-red-600', isError);
+            setTimeout(() => {
+                elements.toast.classList.add('opacity-0');
+                setTimeout(() => elements.toast.classList.add('hidden'), 500);
+            }, 3000);
+        },
+        clearStorage: (section) => {
+            localStorage.removeItem('userData');
+            if (state.currentUser) {
+                localStorage.removeItem(utils.storageKey(state.currentUser.id));
+            }
+            localStorage.setItem(`${section}Submitted`, 'true');
+            // Removed global testSubmitted
+        },
+        disableWritingButton: () => {
+            elements.startWritingBtn.disabled = true;
+            elements.startWritingBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        },
+        requestFullScreen: () => {
+            const elem = document.documentElement;
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen();
+            } else if (elem.webkitRequestFullscreen) {
+                elem.webkitRequestFullscreen();
+            }
+        }
+    };
+
+    // Timer
+    const timer = {
+        start: () => {
+            clearInterval(state.timerInterval);
+            timer.updateDisplay();
+            state.timerInterval = setInterval(() => {
+                state.totalSeconds -= 1;
+                if (state.totalSeconds <= 0) {
+                    timer.endTest('Time is up! Test submitted automatically.');
+                }
+                timer.updateDisplay();
+            }, 1000);
+        },
+        updateDisplay: () => {
+            const mm = Math.floor(state.totalSeconds / 60).toString().padStart(2, '0');
+            const ss = (state.totalSeconds % 60).toString().padStart(2, '0');
+            elements.timer.textContent = `${mm}:${ss}`;
+        },
+        endTest: (message) => {
+            clearInterval(state.timerInterval);
+            elements.timer.textContent = '00:00';
+            elements.timer.classList.add('text-red-500', 'animate-pulse');
+            if (!state.isTestSubmitted) {
+                pdf.send(state.currentUser, 'writing');
+                utils.showToast(message);
+                state.isTestSubmitted = true;
+                elements.app.classList.add('hidden');
+                elements.waitingScreen.classList.remove('hidden');
+                utils.disableWritingButton();
+                utils.requestFullScreen();
+            }
+        }
+    };
+
+    // UI
+    const ui = {
+        showPart: (part) => {
+            const isPart1 = part === 1;
+            elements.btnPart1.classList.toggle('bg-ielts-light-blue', isPart1);
+            elements.btnPart1.classList.toggle('border-ielts-border', isPart1);
+            elements.btnPart1.classList.toggle('text-ielts-blue', isPart1);
+            elements.btnPart1.classList.toggle('shadow-md', isPart1);
+            elements.btnPart1.classList.toggle('bg-white', !isPart1);
+            elements.btnPart1.classList.toggle('border-slate-300', !isPart1);
+            elements.btnPart1.classList.toggle('text-slate-600', !isPart1);
+
+            elements.btnPart2.classList.toggle('bg-ielts-light-blue', !isPart1);
+            elements.btnPart2.classList.toggle('border-ielts-border', !isPart1);
+            elements.btnPart2.classList.toggle('text-ielts-blue', !isPart1);
+            elements.btnPart2.classList.toggle('shadow-md', !isPart1);
+            elements.btnPart2.classList.toggle('bg-white', isPart1);
+            elements.btnPart2.classList.toggle('border-slate-300', isPart1);
+            elements.btnPart2.classList.toggle('text-slate-600', isPart1);
+
+            elements.part1Area.classList.toggle('hidden', !isPart1);
+            elements.part2Area.classList.toggle('hidden', isPart1);
+            elements.part1Card.classList.toggle('hidden', !isPart1);
+            elements.part2Card.classList.toggle('hidden', isPart1);
+            elements.sendBtn.classList.toggle('hidden', isPart1);
+        },
+        updateWordCount: () => {
+            const wc1 = utils.countWords(elements.text1.value);
+            const wc2 = utils.countWords(elements.text2.value);
+            elements.words1.textContent = wc1;
+            elements.words2.textContent = wc2;
+            elements.words1.classList.toggle('text-red-500', wc1 < 150);
+            elements.words2.classList.toggle('text-red-500', wc2 < 250);
+        }
+    };
+
+    // PDF (Improved: Modern layout, red titles/key words, single PDF only, "Essay" instead of "Response")
+    const pdf = {
+        generate: async (user, section) => {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+            const margin = 36; // Reduced margin for modern look
+            const pageWidth = doc.internal.pageSize.width;
+            let y = margin;
+
+            // Modern Title with gradient-like effect (bold, larger, red)
+            doc.setFont("helvetica", "bold"); // Modern font
+            doc.setFontSize(24);
+            doc.setTextColor(220, 38, 38); // Red color
+            doc.text("IELTS Writing Mock Exam", pageWidth / 2, y, { align: "center" });
+            y += 35;
+
+            // User Info Section (Modern table-like)
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(12);
+            doc.setTextColor(0, 0, 0);
+            doc.setFillColor(248, 250, 252); // Light gray background
+            doc.rect(margin, y - 10, pageWidth - 2 * margin, 80, 'F'); // Background rect
+            doc.setDrawColor(191, 219, 254); // Light blue border
+            doc.rect(margin, y - 10, pageWidth - 2 * margin, 80, 'S');
+
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(14);
+            doc.setTextColor(220, 38, 38); // Red for keys
+            doc.text("Candidate Information:", margin + 10, y);
+            y += 20;
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(11);
+            doc.setTextColor(0, 0, 0);
+            doc.text(`Full Name: ${user.name} ${user.surname}`, margin + 10, y);
+            y += 15;
+            doc.text(`Class: ${user.class}`, margin + 10, y);
+            y += 15;
+            const start = elements.startTime.dataset.value ? utils.formatTimestamp(+elements.startTime.dataset.value) : '-';
+            const end = Date.now();
+            doc.text(`Start Time: ${start}`, margin + 10, y);
+            y += 15;
+            doc.text(`End Time: ${utils.formatTimestamp(end)}`, margin + 10, y);
+            y += 25;
+
+            // Decorative Line (Thicker, red)
+            doc.setDrawColor(220, 38, 38);
+            doc.setLineWidth(2);
+            doc.line(margin, y, pageWidth - margin, y);
+            y += 25;
+
+            // Part 1 (Modern: Red title, better spacing)
+            if (section === 'writing') {
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(16);
+                doc.setTextColor(220, 38, 38); // Red title
+                doc.text("Part 1: Data Description Task (Minimum 150 words)", margin, y);
+                y += 25;
+
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(11);
+                doc.setTextColor(0, 0, 0);
+                doc.setFillColor(34, 197, 94, 0.1); // Light green bg for question
+                doc.rect(margin, y - 8, pageWidth - 2 * margin, 60, 'F');
+                doc.text("Task:", margin + 10, y);
+                y += 15;
+                doc.setFont("helvetica", "bold");
+                doc.setTextColor(220, 38, 38); // Red for key phrases
+                const task1 = doc.splitTextToSize("Summarize the information by selecting and reporting the main features, and make comparisons where relevant.", pageWidth - 2 * margin - 20);
+                doc.text(task1, margin + 10, y);
+                y += task1.length * 12 + 5;
+                doc.setFont("helvetica", "normal");
+                doc.setTextColor(0, 0, 0);
+                const taskDesc1 = doc.splitTextToSize("The bar chart illustrates music purchases in the USA in 2010, categorized by age group.", pageWidth - 2 * margin - 20);
+                doc.text(taskDesc1, margin + 10, y);
+                y += 25;
+
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(14);
+                doc.setTextColor(220, 38, 38); // Red for "Essay"
+                doc.text("Essay:", margin, y);
+                y += 18;
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(11);
+                const answer1 = elements.text1.value || "No essay provided.";
+                const splitText1 = doc.splitTextToSize(answer1, pageWidth - 2 * margin);
+                doc.text(splitText1, margin, y);
+                y += splitText1.length * 12 + 15;
+                doc.setFont("helvetica", "bold");
+                doc.setTextColor(0, 0, 0);
+                doc.text(`Word Count: ${utils.countWords(answer1)}`, margin, y);
+                y += 30;
+
+                // Page break check
+                if (y > doc.internal.pageSize.height - 120) {
+                    doc.addPage();
+                    y = margin;
+                }
+
+                // Part 2 (Similar modern style)
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(16);
+                doc.setTextColor(220, 38, 38); // Red title
+                doc.text("Part 2: Opinion Essay Task (Minimum 250 words)", margin, y);
+                y += 25;
+
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(11);
+                doc.setTextColor(0, 0, 0);
+                doc.setFillColor(34, 197, 94, 0.1); // Light green bg
+                doc.rect(margin, y - 8, pageWidth - 2 * margin, 70, 'F');
+                doc.text("Task:", margin + 10, y);
+                y += 15;
+                doc.setFont("helvetica", "bold");
+                doc.setTextColor(220, 38, 38); // Red key
+                const task2 = doc.splitTextToSize("To what extent do you agree or disagree? Provide reasons and examples.", pageWidth - 2 * margin - 20);
+                doc.text(task2, margin + 10, y);
+                y += task2.length * 12 + 5;
+                doc.setFont("helvetica", "normal");
+                doc.setTextColor(0, 0, 0);
+                const taskDesc2 = doc.splitTextToSize("Modern buildings alter the character and appearance of towns and cities. Should the government mandate traditional styles for new constructions to preserve cultural identity?", pageWidth - 2 * margin - 20);
+                doc.text(taskDesc2, margin + 10, y);
+                y += 25;
+
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(14);
+                doc.setTextColor(220, 38, 38); // Red "Essay"
+                doc.text("Essay:", margin, y);
+                y += 18;
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(11);
+                const answer2 = elements.text2.value || "No essay provided.";
+                const splitText2 = doc.splitTextToSize(answer2, pageWidth - 2 * margin);
+                const remainingHeight = doc.internal.pageSize.height - y - margin;
+                const linesOnPage = Math.floor(remainingHeight / 12);
+                if (splitText2.length > linesOnPage) {
+                    doc.text(splitText2.slice(0, linesOnPage), margin, y);
+                    doc.addPage();
+                    y = margin;
+                    doc.text(splitText2.slice(linesOnPage), margin, y);
+                    y += splitText2.slice(linesOnPage).length * 12;
+                } else {
+                    doc.text(splitText2, margin, y);
+                    y += splitText2.length * 12;
+                }
+                y += 15;
+                doc.setFont("helvetica", "bold");
+                doc.setTextColor(0, 0, 0);
+                doc.text(`Word Count: ${utils.countWords(answer2)}`, margin, y);
+            }
+
+            // Modern Footer
+            doc.setFontSize(9);
+            doc.setTextColor(100, 100, 100);
+            doc.setFont("helvetica", "italic");
+            doc.text("Generated by IELTS Writing Mock Exam | Muhammadamin Pulatov", pageWidth / 2, doc.internal.pageSize.height - 20, { align: "center" });
+
+            return doc;
+        },
+        send: async (user, section) => {
+            // Ensure only one send: Check if already sending
+            if (state.isTestSubmitted) return;
+            state.isTestSubmitted = true; // Prevent multiples
+
+            if (!CONFIG.TELEGRAM_BOT_TOKEN || !CONFIG.TELEGRAM_CHAT_ID) {
+                utils.showToast('Telegram bot not configured. Please contact support.', true);
+                return;
+            }
+
+            const doc = await pdf.generate(user, section);
+            const blob = doc.output('blob');
+            const fileName = `${user.name}_${user.surname}_${user.class}_Writing.pdf`;
+
+            try {
+                const formData = new FormData();
+                formData.append('chat_id', CONFIG.TELEGRAM_CHAT_ID);
+                formData.append('document', blob, fileName);
+                const resp = await fetch(`https://api.telegram.org/bot${CONFIG.TELEGRAM_BOT_TOKEN}/sendDocument`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await resp.json();
+                if (!result.ok) throw new Error(`Send failed: ${result.description || 'Unknown error'}`);
+                utils.showToast('Sent Successfully!');
+                elements.app.classList.add('hidden');
+                elements.waitingScreen.classList.remove('hidden');
+                utils.clearStorage(section);
+                utils.disableWritingButton();
+                utils.requestFullScreen();
+            } catch (e) {
+                console.error('Telegram send error:', e);
+                utils.showToast(`Send failed: ${e.message}. Please contact support.`, true);
+                elements.app.classList.add('hidden');
+                elements.waitingScreen.classList.remove('hidden');
+                utils.clearStorage(section);
+                utils.disableWritingButton();
+                utils.requestFullScreen();
+                state.isTestSubmitted = false; // Allow retry if failed
+            }
+        }
+    };
+
+    // Security
+    const security = {
+        detectViolations: () => {
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'hidden' && state.isTestActive && !state.isTestSubmitted) {
+                    utils.showToast('Warning: Switching windows will submit your test.');
+                    setTimeout(() => {
+                        timer.endTest('Test terminated: Unauthorized window switch detected.');
+                    }, 2000);
+                }
+            });
+            window.addEventListener('blur', () => {
+                if (state.isTestActive && !state.isTestSubmitted) {
+                    utils.showToast('Warning: Losing focus will submit your test.');
+                    setTimeout(() => {
+                        timer.endTest('Test terminated: Unauthorized focus change detected.');
+                    }, 2000);
+                }
+            });
+            document.addEventListener('fullscreenchange', () => {
+                if (!document.fullscreenElement && state.isTestActive && !state.isTestSubmitted) {
+                    utils.showToast('Warning: Exiting fullscreen will submit your test.');
+                    setTimeout(() => {
+                        timer.endTest('Test terminated: Exited fullscreen mode.');
+                    }, 2000);
+                }
+            });
+            document.addEventListener('contextmenu', (e) => {
+                if (state.isTestActive && !state.isTestSubmitted) {
+                    e.preventDefault();
+                    utils.showToast('Warning: Right-click is disabled.');
+                    setTimeout(() => {
+                        timer.endTest('Test terminated: Right-click detected.');
+                    }, 2000);
+                }
+            });
+            document.addEventListener('keydown', (e) => {
+                if ((e.ctrlKey && e.shiftKey && e.key === 'I') || e.key === 'F12') {
+                    if (state.isTestActive && !state.isTestSubmitted) {
+                        e.preventDefault();
+                        utils.showToast('Warning: Developer tools access is disabled.');
+                        setTimeout(() => {
+                            timer.endTest('Test terminated: Developer tools access detected.');
+                        }, 2000);
+                    }
+                }
+                // Prevent back navigation (F5, Ctrl+R, etc.)
+                if (e.key === 'F5' || (e.ctrlKey && e.key === 'r')) {
+                    e.preventDefault();
+                }
+                // Block history back
+                window.addEventListener('popstate', (e) => {
+                    if (state.isTestActive) {
+                        e.preventDefault();
+                        history.pushState(null, null, window.location.href);
+                        utils.showToast('Navigation blocked during test.');
+                    }
+                });
+            });
+        },
+        blockAccess: () => {
+            // Removed global check, handled per section
+            return false;
+        }
+    };
+
+    // Event Listeners
+    const initEvents = () => {
+        // Register
+        elements.registerBtn.addEventListener('click', () => {
+            const name = elements.nameInput.value.trim();
+            const surname = elements.surnameInput.value.trim();
+            const className = elements.classInput.value;
+            if (!name || !surname || !className) {
+                utils.showToast('Please fill in all fields.', true);
+                return;
+            }
+            if (!/^[a-zA-Z\s]+$/.test(name) || !/^[a-zA-Z\s]+$/.test(surname)) {
+                utils.showToast('Name and surname must contain only letters and spaces.', true);
+                return;
+            }
+            state.currentUser = {
+                id: `${name}_${surname}_${Date.now()}`,
+                name,
+                surname,
+                class: className
+            };
+            utils.saveUser(state.currentUser);
+            elements.registerScreen.classList.add('hidden');
+            elements.waitingScreen.classList.remove('hidden');
+            elements.currentUserWaiting.textContent = `${state.currentUser.name} ${state.currentUser.surname}`;
+            elements.userClassWaiting.textContent = state.currentUser.class;
+            elements.userInfo.classList.remove('hidden');
+            // Removed check for already started section
+            utils.requestFullScreen();
+        });
+
+        // Start Reading (Allow always, no section limit)
+        elements.startReadingBtn.addEventListener('click', () => {
+            if (!state.currentUser) return;
+            // Assume reading.html handles its own submission/disable
+            utils.requestFullScreen();
+            window.location.href = 'reading.html';
+        });
+
+        // Start Listening (Allow always, no section limit)
+        elements.startListeningBtn.addEventListener('click', () => {
+            if (!state.currentUser) return;
+            // Assume listening.html handles its own submission/disable
+            utils.requestFullScreen();
+            window.location.href = 'listening.html';
+        });
+
+        // Start Writing
+        elements.startWritingBtn.addEventListener('click', () => {
+            if (!state.currentUser) return;
+            if (localStorage.getItem('writingSubmitted') === 'true') {
+                utils.showToast('Writing already submitted. Contact admin to reset.', true);
+                return;
+            }
+            localStorage.setItem('writingSectionStarted', 'true');
+            state.sectionStarted = 'writing';
+            elements.waitingScreen.classList.add('hidden');
+            elements.app.classList.remove('hidden');
+            state.isTestActive = true;
+            const now = Date.now();
+            elements.startTime.dataset.value = now;
+            elements.startTime.textContent = utils.formatTimestamp(now);
+            elements.currentUser.textContent = `${state.currentUser.name} ${state.currentUser.surname}`;
+            elements.userClass.textContent = state.currentUser.class;
+            timer.start();
+            utils.requestFullScreen();
+            // Push state to prevent back
+            history.pushState(null, null, window.location.href);
+        });
+
+        [elements.text1, elements.text2].forEach(el => {
+            el.addEventListener('input', () => {
+                ui.updateWordCount();
+                utils.saveState(state.currentUser.id);
+            });
+        });
+
+        elements.btnPart1.addEventListener('click', () => {
+            if (security.blockAccess()) return;
+            ui.showPart(1);
+        });
+
+        elements.btnPart2.addEventListener('click', () => {
+            if (security.blockAccess()) return;
+            ui.showPart(2);
+        });
+
+        elements.sendBtn.addEventListener('click', () => {
+            if (security.blockAccess()) return;
+            const wc1 = utils.countWords(elements.text1.value);
+            const wc2 = utils.countWords(elements.text2.value);
+            if (wc1 < 150 || wc2 < 250) {
+                if (!confirm('Your essays are below the minimum word count (150 for Part 1, 250 for Part 2). Submit anyway?')) {
+                    return;
+                }
+            }
+            pdf.send(state.currentUser, 'writing');
+        });
+
+        elements.chart1.addEventListener('click', () => {
+            if (state.isTestActive && !state.isTestSubmitted) {
+                elements.chartModal.classList.remove('hidden');
+            }
+        });
+
+        elements.chartModal.addEventListener('click', () => {
+            elements.chartModal.classList.add('hidden');
+        });
+    };
+
+    // Initialize
+    const initialize = () => {
+        const user = utils.loadUser();
+        if (user) {
+            state.currentUser = user;
+            elements.currentUserWaiting.textContent = `${user.name} ${user.surname}`;
+            elements.userClassWaiting.textContent = user.class;
+            elements.currentUser.textContent = `${user.name} ${user.surname}`;
+            elements.userClass.textContent = user.class;
+            elements.userInfo.classList.remove('hidden');
+            utils.loadState(user.id);
+            ui.updateWordCount();
+            elements.registerScreen.classList.add('hidden');
+            elements.waitingScreen.classList.remove('hidden');
+            state.sectionStarted = localStorage.getItem('writingSectionStarted');
+            if (localStorage.getItem('writingSubmitted') === 'true') {
+                state.isTestSubmitted = true;
+                utils.disableWritingButton();
+            }
+            if (state.sectionStarted === 'writing' && localStorage.getItem('writingSubmitted') !== 'true') {
+                // Resume writing if started and not submitted
+                elements.waitingScreen.classList.add('hidden');
+                elements.app.classList.remove('hidden');
+                state.isTestActive = true;
+                timer.start();
+                utils.requestFullScreen();
+            }
+            utils.requestFullScreen();
+        }
+        ui.showPart(1);
+        security.detectViolations();
+        // Prevent back button globally
+        history.pushState(null, null, window.location.href);
+        window.addEventListener('popstate', () => {
+            if (state.isTestActive || state.sectionStarted) {
+                history.pushState(null, null, window.location.href);
+                utils.showToast('Navigation back is disabled during exam.');
+            }
+        });
+    };
+
+    initEvents();
+    initialize();
+</script>
+</body>
+</html>
